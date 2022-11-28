@@ -11,7 +11,10 @@ CRGB leds[NUM_LEDS];
 const int lane_sensors[2][2] = {{A0, A1}, {A2, A3}};
 const int lane_sensor_thresh[2][2] = {{10, 10}, {10, 10}};
 constexpr int neopixels_data_pin = 4;
-constexpr int reset_button_pin = 12;
+constexpr int button_left_pin = 11;
+constexpr int button_right_pin = 12;
+constexpr int button_up_pin = 8;
+constexpr int button_down_pin = 10;
 constexpr unsigned long race_timeout_usecs = 5E6;
 
 unsigned long lane_micros[2][2];
@@ -28,7 +31,10 @@ constexpr float TO_METER_PER_SECOND = 0.08 * 1E6;
 constexpr float TO_KMH = 0.08 * 1E6 * 3.6;
 constexpr float TO_KMH_UNSCALED = 0.08 * 1E6 * 3.6 * 64;
 
-Button2 resetButton;
+Button2 button_left;
+Button2 button_right;
+Button2 button_up;
+Button2 button_down;
 
 //#define DEBUG_RACE
 //#define DEBUG_UPDATE
@@ -73,7 +79,10 @@ void setup() {
 
   full_reset();
 
-  resetButton.begin(reset_button_pin, INPUT, false);
+  button_left.begin(button_left_pin, INPUT, false);
+  button_right.begin(button_right_pin, INPUT, false);
+  button_up.begin(button_up_pin, INPUT, false);
+  button_down.begin(button_down_pin, INPUT, false);
 
   Serial.begin(9600);
   while (!Serial) {
@@ -124,7 +133,7 @@ void loop() {
 
   if (last_led_update + 1000 < millis()) {
     unsigned long start_update = micros();
-    
+
     if (lane_micros[0][1] > 0 && lane_micros[1][1] > 0) {
       Serial.println("red/green leds");
       CRGB lane_a_color, lane_b_color;
@@ -184,17 +193,47 @@ void loop() {
   }
 #endif
 
-#if 0
-    resetButton.loop();
-    if (resetButton.wasPressed()) {
-       Serial.println("was pressed");
-      switch (resetButton.read())
-      {
-      case single_click: {
-          Serial.println("reset clicked");
-        }
-      }
+#if 1
+  button_left.loop();
+  button_right.loop();
+  button_up.loop();
+  button_down.loop();
+  if (button_left.wasPressed()) {
+    switch (button_left.read()) {
+    case single_click:
+      Serial.println("left single");
+      break;
+    case long_click:
+      Serial.println("left long");
     }
+  }
+  if (button_right.wasPressed()) {
+    switch (button_right.read()) {
+    case single_click:
+      Serial.println("right single");
+      break;
+    case long_click:
+      Serial.println("right long");
+    }
+  }
+  if (button_up.wasPressed()) {
+    switch (button_up.read()) {
+    case single_click:
+      Serial.println("up single");
+      break;
+    case long_click:
+      Serial.println("up long");
+    }
+  }
+  if (button_down.wasPressed()) {
+    switch (button_down.read()) {
+    case single_click:
+      Serial.println("down single");
+      break;
+    case long_click:
+      Serial.println("down long");
+    }
+  }
 #endif
 
   for (uint8_t lane = 0; lane < 2; ++lane) {
