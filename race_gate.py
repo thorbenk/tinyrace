@@ -28,7 +28,30 @@ cursor_buttons_x = 20
 cursor_buttons_y = 15
 cursor_button_diameter = 10
 
-height = gate_height + neopixel_offset + neopixel_height + lcd_offset_below + lcd_cutout_height + lcd_offset_above
+height = (
+    gate_height
+    + neopixel_offset
+    + neopixel_height
+    + lcd_offset_below
+    + lcd_cutout_height
+    + lcd_offset_above
+)
+
+
+def tag_box(box):
+    box.faces("<X").tag("side_top")
+    box.faces(">X").tag("side_right")
+    box.faces("<Y").tag("side_bottom")
+    box.faces(">Y").tag("side_top")
+    box.faces("<X").edges("<Y").vertices(">Z").tag("front_bl")
+    box.faces("<X").edges(">Y").vertices(">Z").tag("front_tl")
+    box.faces(">X").edges("<Y").vertices(">Z").tag("front_br")
+    box.faces(">X").edges(">Y").vertices(">Z").tag("front_tr")
+    box.faces("<X").edges("<Y").vertices("<Z").tag("back_bl")
+    box.faces("<X").edges(">Y").vertices("<Z").tag("back_tl")
+    box.faces(">X").edges("<Y").vertices("<Z").tag("back_br")
+    box.faces(">X").edges(">Y").vertices("<Z").tag("back_tr")
+
 
 pts = [
     (0, 0),
@@ -41,34 +64,48 @@ pts = [
     (0, height),
 ]
 
-front = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
 
-back = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
+def make_front():
+    front = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
+    front = (
+        front.workplane(offset=0)
+        .center(
+            0,
+            gate_height
+            + neopixel_offset
+            + neopixel_height
+            + lcd_offset_below
+            + lcd_cutout_height / 2.0,
+        )
+        .rect(lcd_cutout_width, lcd_cutout_height)
+        .cutThruAll()
+        .workplane(
+            offset=0,
+            origin=(
+                gate_gate_width / 2.0 + gate_width / 2.0,
+                gate_height + neopixel_offset + neopixel_height / 2.0,
+            ),
+        )
+        .rect(neopixel_width, neopixel_height)
+        .cutThruAll()
+        .workplane(
+            offset=0,
+            origin=(
+                -(gate_gate_width / 2.0 + gate_width / 2.0),
+                gate_height + neopixel_offset + neopixel_height / 2.0,
+            ),
+        )
+        .rect(neopixel_width, neopixel_height)
+        .cutThruAll()
+    )
+    tag_box(front)
+    return front
 
-front = (
-    front.workplane(offset=0)
-    .center(0, gate_height + neopixel_offset +neopixel_height + lcd_offset_below + lcd_cutout_height / 2.0)
-    .rect(lcd_cutout_width, lcd_cutout_height)
-    .cutThruAll()
-    .workplane(
-        offset=0,
-        origin=(
-            gate_gate_width / 2.0 + gate_width / 2.0,
-            gate_height + neopixel_offset + neopixel_height / 2.0,
-        ),
-    )
-    .rect(neopixel_width, neopixel_height)
-    .cutThruAll()
-    .workplane(
-        offset=0,
-        origin=(
-            -(gate_gate_width / 2.0 + gate_width / 2.0),
-            gate_height + neopixel_offset + neopixel_height / 2.0,
-        ),
-    )
-    .rect(neopixel_width, neopixel_height)
-    .cutThruAll()
-)
+
+def make_back():
+    back = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
+    tag_box(back)
+    return back
 
 
 def make_top():
@@ -90,23 +127,26 @@ def make_top():
         .circle(cursor_button_diameter / 2.0)
         .extrude(wood_thickness)
     )
-    top.faces("<X").edges("<Y").vertices("<Z").tag("bl")
-    top.faces("<X").edges(">Y").vertices("<Z").tag("tl")
-    top.faces("<X").edges("<Y").vertices(">Z").tag("br")
-    top.faces("<X").edges(">Y").vertices(">Z").tag("tr")
+    tag_box(top)
     return top
 
 
-top = make_top()
-
-
-left = (
-    cq.Workplane("YZ").rect(height, depth - 2 * wood_thickness).extrude(wood_thickness)
-)
-
-right = (
-    cq.Workplane("YZ").rect(height, depth - 2 * wood_thickness).extrude(wood_thickness)
-)
+def make_left():
+    w, h = depth - 2 * wood_thickness, height
+    left = cq.Workplane("XY").rect(w, h).extrude(wood_thickness)
+    left.faces("<X").tag("side_left")
+    left.faces(">X").tag("side_right")
+    left.faces("<Y").tag("side_bottom")
+    left.faces(">Y").tag("side_top")
+    left.faces("<X").edges("<Y").vertices(">Z").tag("front_bl")
+    left.faces("<X").edges(">Y").vertices(">Z").tag("front_tl")
+    left.faces(">X").edges("<Y").vertices(">Z").tag("front_br")
+    left.faces(">X").edges(">Y").vertices(">Z").tag("front_tr")
+    left.faces("<X").edges("<Y").vertices("<Z").tag("back_bl")
+    left.faces("<X").edges(">Y").vertices("<Z").tag("back_tl")
+    left.faces(">X").edges("<Y").vertices("<Z").tag("back_br")
+    left.faces(">X").edges(">Y").vertices("<Z").tag("back_tr")
+    return left
 
 
 def make_gate_side():
@@ -123,33 +163,15 @@ def make_gate_side():
     )
 
 
-front.faces("<Z").edges("<X").vertices("<Y").tag("bl")
-front.faces("<Z").edges("<X").vertices(">Y").tag("tl")
-front.faces("<Z").edges(">X").vertices("<Y").tag("br")
-front.faces("<Z").edges(">X").vertices(">Y").tag("tr")
-
-back.faces(">Z").edges("<X").vertices("<Y").tag("bl")
-back.faces(">Z").edges("<X").vertices(">Y").tag("tl")
-back.faces(">Z").edges(">X").vertices("<Y").tag("br")
-back.faces(">Z").edges(">X").vertices(">Y").tag("tr")
-
-left.faces(">Z").edges("<X").vertices("<Y").tag("bl")
-left.faces(">Z").edges("<X").vertices(">Y").tag("tl")
-left.faces(">Z").edges(">X").vertices("<Y").tag("br")
-left.faces(">Z").edges(">X").vertices(">Y").tag("tr")
-
-left.faces("<Z").edges("<X").vertices(">Y").tag("back_tl")
-
-right.faces(">Z").edges(">X").vertices("<Y").tag("br")
-right.faces(">Z").edges(">X").vertices(">Y").tag("tr")
-right.faces(">Z").edges("<X").vertices("<Y").tag("bl")
-right.faces(">Z").edges("<X").vertices(">Y").tag("tl")
-
+left = make_left()
+right = make_left()
+top = make_top()
+front = make_front()
+back = make_back()
 gate_a_l = make_gate_side()
 gate_a_r = make_gate_side()
 gate_b_l = make_gate_side()
 gate_b_r = make_gate_side()
-
 
 gate = (
     cq.Assembly()
@@ -165,9 +187,10 @@ gate = (
 )
 
 (
-    gate.constrain("top", "FixedRotation", (90, 0, 0))
-    .constrain("left", "FixedRotation", (0, 0, 0))
-    .constrain("right", "FixedRotation", (0, 0, 0))
+    gate.constrain("front", "FixedRotation", (0, 0, 0))
+    .constrain("top", "FixedRotation", (-90, 0, 0))
+    .constrain("left", "FixedRotation", (0, 90, 0))
+    .constrain("right", "FixedRotation", (0, 90, 0))
     .constrain("back", "FixedRotation", (0, 0, 0))
     .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
     .constrain(
@@ -213,13 +236,13 @@ gate = (
         ).val(),
         "Point",
     )
-    .constrain("front@faces@<Z", "left@faces@>Z", "Axis")
-    .constrain("left?bl", "front?bl", "Point")
-    .constrain("front@faces@<Z", "right@faces@>Z", "Axis")
-    .constrain("right?br", "front?br", "Point")
-    .constrain("left?tr", "top?tl", "Point")
-    .constrain("back@faces@>Z", "left@faces@<Z", "Axis")
-    .constrain("left?back_tl", "back?tl", "Point")
+    .constrain("left?back_bl", "front?back_bl", "Point")
+    .constrain("right?front_bl", "front?back_br", "Point")
+    .constrain("right?front_br", "back?front_br", "Point")
+    .constrain("top?front_bl", "left?front_tl", "Point")
+    # .constrain("top?front_tl", "left?front_tr", "Point")
+    # .constrain("right?br", "front?br", "Point")
+    # .constrain("left?front_bl", "top?front_bl", "Point")
     .solve()
 )
 
