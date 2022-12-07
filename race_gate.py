@@ -1,6 +1,6 @@
 import cadquery as cq
 
-#result = cq.Workplane().box(10, 10, 10)
+# result = cq.Workplane().box(10, 10, 10)
 
 side_gate_dist = 3
 gate_width = 5
@@ -12,8 +12,8 @@ depth = 11
 
 wood_thickness = 0.7
 
-lcd_cutout_width=4
-lcd_cutout_height=1
+lcd_cutout_width = 4
+lcd_cutout_height = 1
 
 neopixel_offset = 1
 neopixel_width = gate_width
@@ -24,59 +24,79 @@ gate_led_height = 1.2
 gate_led_diameter = 0.5
 
 pts = [
-       (0,0),
-       (gate_gate_width/2.0, 0),
-       (gate_gate_width/2.0, gate_height),
-       (gate_gate_width/2.0 + gate_width, gate_height),
-       (gate_gate_width/2.0 + gate_width, 0),
-       (gate_gate_width/2.0 + gate_width + side_gate_dist, 0),
-       (gate_gate_width/2.0 + gate_width + side_gate_dist, height),
-       (0,height),
-       ]
+    (0, 0),
+    (gate_gate_width / 2.0, 0),
+    (gate_gate_width / 2.0, gate_height),
+    (gate_gate_width / 2.0 + gate_width, gate_height),
+    (gate_gate_width / 2.0 + gate_width, 0),
+    (gate_gate_width / 2.0 + gate_width + side_gate_dist, 0),
+    (gate_gate_width / 2.0 + gate_width + side_gate_dist, height),
+    (0, height),
+]
 
 front = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
 
 back = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
 
-front = front\
-    .workplane(offset=0)\
-    .center(0,gate_height+lcd_offset+lcd_cutout_height/2.0)\
-    .rect(lcd_cutout_width, lcd_cutout_height)\
-    .cutThruAll()\
-    .workplane(offset=0, origin=(gate_gate_width/2.0 + gate_width/2.0, gate_height+neopixel_offset+neopixel_height/2.0))\
-    .rect(neopixel_width, neopixel_height)\
-    .cutThruAll()  \
-    .workplane(offset=0, origin=(-(gate_gate_width/2.0 + gate_width/2.0), gate_height+neopixel_offset+neopixel_height/2.0))\
-    .rect(neopixel_width, neopixel_height)\
+front = (
+    front.workplane(offset=0)
+    .center(0, gate_height + lcd_offset + lcd_cutout_height / 2.0)
+    .rect(lcd_cutout_width, lcd_cutout_height)
     .cutThruAll()
-    
-#front.faces(">Z").tag("Z").end()
+    .workplane(
+        offset=0,
+        origin=(
+            gate_gate_width / 2.0 + gate_width / 2.0,
+            gate_height + neopixel_offset + neopixel_height / 2.0,
+        ),
+    )
+    .rect(neopixel_width, neopixel_height)
+    .cutThruAll()
+    .workplane(
+        offset=0,
+        origin=(
+            -(gate_gate_width / 2.0 + gate_width / 2.0),
+            gate_height + neopixel_offset + neopixel_height / 2.0,
+        ),
+    )
+    .rect(neopixel_width, neopixel_height)
+    .cutThruAll()
+)
 
-top = cq.Workplane("XZ")\
-    .rect(2*(gate_gate_width/2 + gate_width + side_gate_dist - wood_thickness), depth-2*wood_thickness)\
-    .extrude(wood_thickness)
-    
+# front.faces(">Z").tag("Z").end()
 
-left = (cq.Workplane("YZ")
-    .rect(height, depth-2*wood_thickness)
+top = (
+    cq.Workplane("XZ")
+    .rect(
+        2 * (gate_gate_width / 2 + gate_width + side_gate_dist - wood_thickness),
+        depth - 2 * wood_thickness,
+    )
     .extrude(wood_thickness)
 )
 
-right = (cq.Workplane("YZ")
-    .rect(height, depth-2*wood_thickness)
-    .extrude(wood_thickness)
+
+left = (
+    cq.Workplane("YZ").rect(height, depth - 2 * wood_thickness).extrude(wood_thickness)
 )
+
+right = (
+    cq.Workplane("YZ").rect(height, depth - 2 * wood_thickness).extrude(wood_thickness)
+)
+
 
 def make_gate_side():
-    w, h = depth-2*wood_thickness, gate_height
-    return (cq.Workplane("XY")
-            .rect(w, h)
-            .center(-w/2.0, -h/2.0)
-            .moveTo(gate_led_side_dist, gate_led_height)
-            .circle(gate_led_diameter/2.0)
-            .moveTo(w-gate_led_side_dist, gate_led_height)
-            .circle(gate_led_diameter/2.0)
-            .extrude(wood_thickness))
+    w, h = depth - 2 * wood_thickness, gate_height
+    return (
+        cq.Workplane("XY")
+        .rect(w, h)
+        .center(-w / 2.0, -h / 2.0)
+        .moveTo(gate_led_side_dist, gate_led_height)
+        .circle(gate_led_diameter / 2.0)
+        .moveTo(w - gate_led_side_dist, gate_led_height)
+        .circle(gate_led_diameter / 2.0)
+        .extrude(wood_thickness)
+    )
+
 
 front.faces("<Z").edges("<X").vertices("<Y").tag("bl")
 front.faces("<Z").edges("<X").vertices(">Y").tag("tl")
@@ -125,58 +145,67 @@ gate = (
 )
 
 (
-     gate
-    .constrain("top", "FixedRotation", (0,0,0))
-    .constrain("left", "FixedRotation", (0,0,0))
-    .constrain("right", "FixedRotation", (0,0,0))
-    .constrain("top", "FixedRotation", (0,0,0))
-    .constrain("back", "FixedRotation", (0,0,0))
-
-    .constrain("gate_a_l", "FixedRotation", (0,90,0))
-    .constrain("gate_a_l", 
-       gate_a_l.faces(">Z").edges("<X").vertices("<Y").val(),
-       "front",
-       front.vertices(cq.selectors.NearestToPointSelector((-(gate_gate_width/2.0 + gate_width), 0, 0))).val(),
-       "Point"
+    gate.constrain("top", "FixedRotation", (0, 0, 0))
+    .constrain("left", "FixedRotation", (0, 0, 0))
+    .constrain("right", "FixedRotation", (0, 0, 0))
+    .constrain("top", "FixedRotation", (0, 0, 0))
+    .constrain("back", "FixedRotation", (0, 0, 0))
+    .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
+    .constrain(
+        "gate_a_l",
+        gate_a_l.faces(">Z").edges("<X").vertices("<Y").val(),
+        "front",
+        front.vertices(
+            cq.selectors.NearestToPointSelector(
+                (-(gate_gate_width / 2.0 + gate_width), 0, 0)
+            )
+        ).val(),
+        "Point",
     )
-    .constrain("gate_a_r", "FixedRotation", (0,90,0))
-    .constrain("gate_a_r", 
-       gate_a_r.faces("<Z").edges("<X").vertices("<Y").val(),
-       "front",
-       front.vertices(cq.selectors.NearestToPointSelector((-gate_gate_width/2.0, 0, 0))).val(),
-       "Point"
+    .constrain("gate_a_r", "FixedRotation", (0, 90, 0))
+    .constrain(
+        "gate_a_r",
+        gate_a_r.faces("<Z").edges("<X").vertices("<Y").val(),
+        "front",
+        front.vertices(
+            cq.selectors.NearestToPointSelector((-gate_gate_width / 2.0, 0, 0))
+        ).val(),
+        "Point",
     )
-    .constrain("gate_b_l", "FixedRotation", (0,90,0))
-    .constrain("gate_b_l", 
-       gate_b_l.faces(">Z").edges("<X").vertices("<Y").val(),
-       "front",
-       front.vertices(cq.selectors.NearestToPointSelector((gate_gate_width/2.0, 0, 0))).val(),
-       "Point"
+    .constrain("gate_b_l", "FixedRotation", (0, 90, 0))
+    .constrain(
+        "gate_b_l",
+        gate_b_l.faces(">Z").edges("<X").vertices("<Y").val(),
+        "front",
+        front.vertices(
+            cq.selectors.NearestToPointSelector((gate_gate_width / 2.0, 0, 0))
+        ).val(),
+        "Point",
     )
-    .constrain("gate_b_r", "FixedRotation", (0,90,0))
-    .constrain("gate_b_r", 
-       gate_b_r.faces("<Z").edges("<X").vertices("<Y").val(),
-       "front",
-       front.vertices(cq.selectors.NearestToPointSelector((gate_gate_width/2.0 + gate_width, 0, 0))).val(),
-       "Point"
+    .constrain("gate_b_r", "FixedRotation", (0, 90, 0))
+    .constrain(
+        "gate_b_r",
+        gate_b_r.faces("<Z").edges("<X").vertices("<Y").val(),
+        "front",
+        front.vertices(
+            cq.selectors.NearestToPointSelector(
+                (gate_gate_width / 2.0 + gate_width, 0, 0)
+            )
+        ).val(),
+        "Point",
     )
-    
     .constrain("front@faces@<Z", "left@faces@>Z", "Axis")
     .constrain("left?bl", "front?bl", "Point")
-    
     .constrain("front@faces@<Z", "right@faces@>Z", "Axis")
     .constrain("right?br", "front?br", "Point")
-    
     .constrain("front@faces@<Z", "top@faces@>Z", "Axis")
     .constrain("left?tr", "top?tl", "Point")
-    
     .constrain("back@faces@>Z", "left@faces@<Z", "Axis")
     .constrain("left?back_tl", "back?tl", "Point")
-   
-     .solve()
+    .solve()
 )
 
-show_object(gate, name='gate')
-#debug(top.faces(">Z").val())
-#debug(front.faces("<Z").val())
-#debug(left_topleft)
+show_object(gate, name="gate")
+# debug(top.faces(">Z").val())
+# debug(front.faces("<Z").val())
+# debug(left_topleft)
