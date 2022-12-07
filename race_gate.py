@@ -28,6 +28,9 @@ cursor_buttons_x = 20
 cursor_buttons_y = 15
 cursor_button_diameter = 10
 
+on_off_switch_diameter = 12
+on_off_switch_height_offset = 30
+
 height = (
     gate_height
     + neopixel_offset
@@ -131,21 +134,24 @@ def make_top():
     return top
 
 
+def make_right():
+    w, h = depth - 2 * wood_thickness, height
+    right = cq.Workplane("XY").rect(w, h).extrude(wood_thickness)
+    tag_box(right)
+    return right
+
+
 def make_left():
     w, h = depth - 2 * wood_thickness, height
-    left = cq.Workplane("XY").rect(w, h).extrude(wood_thickness)
-    left.faces("<X").tag("side_left")
-    left.faces(">X").tag("side_right")
-    left.faces("<Y").tag("side_bottom")
-    left.faces(">Y").tag("side_top")
-    left.faces("<X").edges("<Y").vertices(">Z").tag("front_bl")
-    left.faces("<X").edges(">Y").vertices(">Z").tag("front_tl")
-    left.faces(">X").edges("<Y").vertices(">Z").tag("front_br")
-    left.faces(">X").edges(">Y").vertices(">Z").tag("front_tr")
-    left.faces("<X").edges("<Y").vertices("<Z").tag("back_bl")
-    left.faces("<X").edges(">Y").vertices("<Z").tag("back_tl")
-    left.faces(">X").edges("<Y").vertices("<Z").tag("back_br")
-    left.faces(">X").edges(">Y").vertices("<Z").tag("back_tr")
+    left = (
+        cq.Workplane("XY")
+        .rect(w, h)
+        .center(-w / 2, -h / 2)
+        .moveTo(w / 2, height - on_off_switch_height_offset)
+        .circle(on_off_switch_diameter / 2.0)
+        .extrude(wood_thickness)
+    )
+    tag_box(left)
     return left
 
 
@@ -164,7 +170,7 @@ def make_gate_side():
 
 
 left = make_left()
-right = make_left()
+right = make_right()
 top = make_top()
 front = make_front()
 back = make_back()
