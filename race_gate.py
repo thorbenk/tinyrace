@@ -1,31 +1,34 @@
-import cadquery as cq
+import cadquery as cqk
 
 # result = cq.Workplane().box(10, 10, 10)
 
-side_gate_dist = 3
-gate_width = 5
-gate_height = 4
-lcd_offset = 2
-gate_gate_width = 2
-height = 8
-depth = 11
+side_gate_dist = 30
+gate_width = 51
+gate_height = 40
+gate_gate_width = 30
+height = 90
+depth = 110
 
-wood_thickness = 0.7
+wood_thickness = 7
 
-lcd_cutout_width = 4
-lcd_cutout_height = 1
+lcd_offset_below = 15
+lcd_cutout_width = 70.70
+lcd_cutout_height = 23.80
+lcd_offset_above = 15
 
-neopixel_offset = 1
+neopixel_offset = 10
 neopixel_width = gate_width
-neopixel_height = 0.4
+neopixel_height = 4
 
-gate_led_side_dist = 0.7
-gate_led_height = 1.2
-gate_led_diameter = 0.5
+gate_led_side_dist = 7
+gate_led_height = 12
+gate_led_diameter = 5
 
-cursor_buttons_x = 2
-cursor_buttons_y = 1.5
-cursor_button_diameter = 1
+cursor_buttons_x = 20
+cursor_buttons_y = 15
+cursor_button_diameter = 10
+
+height = gate_height + neopixel_offset + neopixel_height + lcd_offset_below + lcd_cutout_height + lcd_offset_above
 
 pts = [
     (0, 0),
@@ -44,7 +47,7 @@ back = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness
 
 front = (
     front.workplane(offset=0)
-    .center(0, gate_height + lcd_offset + lcd_cutout_height / 2.0)
+    .center(0, gate_height + neopixel_offset +neopixel_height + lcd_offset_below + lcd_cutout_height / 2.0)
     .rect(lcd_cutout_width, lcd_cutout_height)
     .cutThruAll()
     .workplane(
