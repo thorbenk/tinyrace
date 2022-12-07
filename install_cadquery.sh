@@ -2,6 +2,6 @@
 conda install conda-libmamba-solver
 
 # create a new environment for tinyrace
-conda create --name tinyrace2
-conda activate tinyrace2
-conda install -c cadquery -c conda-forge cq-editor=master --experimental-solver=libmamba -v
+conda create --name tinyrace
+conda activate tinyrace
+conda install -c cadquery -c conda-forge cq-editor=master black --experimental-solver=libmamba -v

@@ -1,6 +1,8 @@
-import cadquery as cqk
+#!/usr/bin/env python
 
-# result = cq.Workplane().box(10, 10, 10)
+import cadquery as cq
+import sys
+import os
 
 side_gate_dist = 30
 gate_width = 51
@@ -246,13 +248,31 @@ gate = (
     .constrain("right?front_bl", "front?back_br", "Point")
     .constrain("right?front_br", "back?front_br", "Point")
     .constrain("top?front_bl", "left?front_tl", "Point")
-    # .constrain("top?front_tl", "left?front_tr", "Point")
-    # .constrain("right?br", "front?br", "Point")
-    # .constrain("left?front_bl", "top?front_bl", "Point")
     .solve()
 )
 
-show_object(gate, name="gate")
+if len(sys.argv) <= 1:
+    show_object(gate, name="gate")
+else:
+    print("height, depth:", height, depth)
+    cq.exporters.export(
+        front, "front.dxf"
+    )
+
+    cmd = "/usr/bin/python3 /usr/share/inkscape/extensions/dxf_input.py --scale=1.0 front.dxf > /tmp/a.svg"
+    print(cmd)
+    os.system(cmd)
+
+    cmd = "inkscape --export-type=svg -o front.svg --export-area-drawing /tmp/a.svg"
+    print(cmd)
+    os.system(cmd)
+
+    #cq.exporters.export(
+    #    top, "top.svg", opt={"projectionDir": (0, 0, 1), "showHidden": False}
+    #)
+    #cq.exporters.export(
+    #    front, "front.svg", opt={"projectionDir": (0, 0, 1), "showHidden": False}
+    #)
 # debug(top.faces(">Z").val())
 # debug(front.faces("<Z").val())
 # debug(left_topleft)
