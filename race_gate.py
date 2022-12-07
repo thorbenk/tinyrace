@@ -23,6 +23,10 @@ gate_led_side_dist = 0.7
 gate_led_height = 1.2
 gate_led_diameter = 0.5
 
+cursor_buttons_x = 2
+cursor_buttons_y = 1.5
+cursor_button_diameter = 1
+
 pts = [
     (0, 0),
     (gate_gate_width / 2.0, 0),
@@ -63,16 +67,34 @@ front = (
     .cutThruAll()
 )
 
-# front.faces(">Z").tag("Z").end()
 
-top = (
-    cq.Workplane("XZ")
-    .rect(
+def make_top():
+    w, h = (
         2 * (gate_gate_width / 2 + gate_width + side_gate_dist - wood_thickness),
         depth - 2 * wood_thickness,
     )
-    .extrude(wood_thickness)
-)
+    top = (
+        cq.Workplane("XY")
+        .rect(w, h)
+        .pushPoints(
+            [
+                (-cursor_buttons_x, 0),
+                (cursor_buttons_x, 0),
+                (0, -cursor_buttons_y),
+                (0, cursor_buttons_y),
+            ]
+        )
+        .circle(cursor_button_diameter / 2.0)
+        .extrude(wood_thickness)
+    )
+    top.faces("<X").edges("<Y").vertices("<Z").tag("bl")
+    top.faces("<X").edges(">Y").vertices("<Z").tag("tl")
+    top.faces("<X").edges("<Y").vertices(">Z").tag("br")
+    top.faces("<X").edges(">Y").vertices(">Z").tag("tr")
+    return top
+
+
+top = make_top()
 
 
 left = (
@@ -108,11 +130,6 @@ back.faces(">Z").edges("<X").vertices(">Y").tag("tl")
 back.faces(">Z").edges(">X").vertices("<Y").tag("br")
 back.faces(">Z").edges(">X").vertices(">Y").tag("tr")
 
-top.faces(">Z").edges("<X").vertices("<Y").tag("bl")
-top.faces(">Z").edges("<X").vertices(">Y").tag("tl")
-top.faces(">Z").edges(">X").vertices("<Y").tag("br")
-top.faces(">Z").edges(">X").vertices(">Y").tag("tr")
-
 left.faces(">Z").edges("<X").vertices("<Y").tag("bl")
 left.faces(">Z").edges("<X").vertices(">Y").tag("tl")
 left.faces(">Z").edges(">X").vertices("<Y").tag("br")
@@ -145,10 +162,9 @@ gate = (
 )
 
 (
-    gate.constrain("top", "FixedRotation", (0, 0, 0))
+    gate.constrain("top", "FixedRotation", (90, 0, 0))
     .constrain("left", "FixedRotation", (0, 0, 0))
     .constrain("right", "FixedRotation", (0, 0, 0))
-    .constrain("top", "FixedRotation", (0, 0, 0))
     .constrain("back", "FixedRotation", (0, 0, 0))
     .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
     .constrain(
@@ -198,7 +214,6 @@ gate = (
     .constrain("left?bl", "front?bl", "Point")
     .constrain("front@faces@<Z", "right@faces@>Z", "Axis")
     .constrain("right?br", "front?br", "Point")
-    .constrain("front@faces@<Z", "top@faces@>Z", "Axis")
     .constrain("left?tr", "top?tl", "Point")
     .constrain("back@faces@>Z", "left@faces@<Z", "Axis")
     .constrain("left?back_tl", "back?tl", "Point")
