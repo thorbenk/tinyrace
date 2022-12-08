@@ -24,6 +24,7 @@ squared_timber_size = 20
 wood_screw_diameter = 2
 
 
+cable_hole_diameter = 10
 side_gate_dist = 2 * wood_thickness + squared_timber_size
 gate_width = neopixel_width
 gate_height = 40
@@ -237,11 +238,13 @@ def make_gate_side(side="l"):
     box = (
         cq.Workplane("XY")
         .rect(w, h)
+        # LED holes
         .center(-w / 2.0, -h / 2.0)
         .moveTo(gate_led_side_dist, gate_led_height)
         .circle(gate_led_diameter / 2.0)
         .moveTo(w - gate_led_side_dist, gate_led_height)
         .circle(gate_led_diameter / 2.0)
+        # wood screws
         .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
@@ -313,6 +316,27 @@ def make_topfloor():
 
     box.vertices(cq.selectors.NearestToPointSelector((gate_a_begin_x, 0))).tag(
         "gate_a_l"
+    )
+
+    box = (
+        box.faces(">Z")
+        .workplane(centerOption="CenterOfMass")
+        .center(-w / 2.0, -h / 2.0)
+        # cable holes left
+        .moveTo(squared_timber_size / 2.0, gate_led_side_dist)
+        .hole(cable_hole_diameter / 2.0)
+        .moveTo(squared_timber_size / 2.0, h - gate_led_side_dist)
+        .hole(cable_hole_diameter / 2.0)
+        # cable holes right
+        .moveTo(w - squared_timber_size / 2.0, gate_led_side_dist)
+        .hole(cable_hole_diameter / 2.0)
+        .moveTo(w - squared_timber_size / 2.0, h - gate_led_side_dist)
+        .hole(cable_hole_diameter / 2.0)
+        # cable holes middle
+        .moveTo(w / 2.0, gate_led_side_dist)
+        .hole(cable_hole_diameter / 2.0)
+        .moveTo(w / 2.0, h - gate_led_side_dist)
+        .hole(cable_hole_diameter / 2.0)
     )
 
     tag_box(box)
@@ -444,6 +468,7 @@ else:
         "gate_a_r": gate_a_r,
         "gate_b_l": gate_b_l,
         "gate_b_r": gate_b_r,
+        "topfloor": topfloor,
     }
     for k, v in export.items():
         print(f"exporting {k}")
