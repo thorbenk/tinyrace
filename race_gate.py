@@ -22,6 +22,7 @@ gate_led_diameter = 5
 wood_thickness = 7
 squared_timber_size = 20
 wood_screw_diameter = 2
+m4_screw_diameter = 4
 
 
 cable_hole_diameter = 10
@@ -48,6 +49,8 @@ cursor_button_diameter = 10
 on_off_switch_height_offset = squared_timber_size + 20
 
 screw_offset = 7.5
+
+top_m4_screw_offset = 20
 
 height = (
     gate_height
@@ -201,16 +204,14 @@ def make_top():
             ]
         )
         .circle(cursor_button_diameter / 2.0)
-        .pushPoints(
-            [
-                (-(w - squared_timber_size) / 2.0, -(h - squared_timber_size) / 2.0),
-                (-(w - squared_timber_size) / 2.0, (h - squared_timber_size) / 2.0),
-                ((w - squared_timber_size) / 2.0, -(h - squared_timber_size) / 2.0),
-                ((w - squared_timber_size) / 2.0, (h - squared_timber_size) / 2.0),
-            ]
-        )
-        .circle(wood_screw_diameter / 2.0)
         .extrude(wood_thickness)
+        .faces(">Z")
+        .vertices("<XY")
+        .workplane(centerOption="CenterOfMass")
+        .moveTo(squared_timber_size/2.0, top_m4_screw_offset)
+        .rect(w-squared_timber_size, h - 2*top_m4_screw_offset, centered=False, forConstruction=True)
+        .vertices()
+        .hole(m4_screw_diameter)
     )
     tag_box(top)
     return top
@@ -219,7 +220,8 @@ def make_top():
 def make_right():
     w, h = depth - 2 * wood_thickness, height
 
-    screw_hole_x = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_x_bottom = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_x_top = w / 2.0
     screw_hole_y = squared_timber_size / 2.0
 
     right = (
@@ -227,16 +229,12 @@ def make_right():
         .rect(w, h)
         .center(-w / 2, -h / 2)
         # screw holes bottom
-        .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
+        .moveTo(gate_led_side_dist + screw_hole_x_bottom, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
-        .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
+        .moveTo(w - gate_led_side_dist - screw_hole_x_bottom, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         # screw holes top
-        .moveTo(gate_led_side_dist + screw_hole_x, h - wood_thickness - screw_hole_y)
-        .circle(wood_screw_diameter / 2.0)
-        .moveTo(
-            w - gate_led_side_dist - screw_hole_x, h - wood_thickness - screw_hole_y
-        )
+        .moveTo(screw_hole_x_top, h - wood_thickness - screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         .extrude(wood_thickness)
     )
@@ -247,7 +245,8 @@ def make_right():
 def make_left():
     w, h = depth - 2 * wood_thickness, height
 
-    screw_hole_x = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_x_bottom = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_x_top = w / 2.0
     screw_hole_y = squared_timber_size / 2.0
 
     left = (
@@ -258,16 +257,12 @@ def make_left():
         .moveTo(w / 2, height - on_off_switch_height_offset)
         .circle(on_off_switch_diameter / 2.0)
         # screw holes bottom
-        .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
+        .moveTo(gate_led_side_dist + screw_hole_x_bottom, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
-        .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
+        .moveTo(w - gate_led_side_dist - screw_hole_x_bottom, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         # screw holes top
-        .moveTo(gate_led_side_dist + screw_hole_x, h - wood_thickness - screw_hole_y)
-        .circle(wood_screw_diameter / 2.0)
-        .moveTo(
-            w - gate_led_side_dist - screw_hole_x, h - wood_thickness - screw_hole_y
-        )
+        .moveTo(screw_hole_x_top, h - wood_thickness - screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         # done
         .extrude(wood_thickness)
