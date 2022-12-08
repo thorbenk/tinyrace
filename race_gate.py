@@ -44,7 +44,7 @@ cursor_buttons_x = 20
 cursor_buttons_y = 15
 cursor_button_diameter = 10
 
-on_off_switch_height_offset = 30
+on_off_switch_height_offset = squared_timber_size + 20
 
 screw_offset = 7.5
 
@@ -225,9 +225,46 @@ def make_gate_side(side="l"):
     return box
 
 
-def make_squared_timber():
+def make_squared_timber_top():
     d = depth - 2 * wood_thickness
-    box = cq.Workplane("XY").rect(squared_timber_size, squared_timber_size).extrude(d)
+    w = squared_timber_size
+
+    box = cq.Workplane("XY").box(w, w, d)
+    tag_box(box)
+    return box
+
+
+def make_squared_timber_bottom(pos):
+    d = depth - 2 * wood_thickness
+    w = squared_timber_size
+
+    offset = 0
+    if pos == "l":
+        hole_depth = w / 2.0
+    elif pos == "m":
+        hole_depth = w
+    else:
+        hole_depth = w / 2.0
+        offset = -w / 2.0
+
+    box = (
+        cq.Workplane("XY")
+        .box(w, w, d)
+        .faces(">X")
+        .workplane(offset=offset)
+        .center(-w / 2.0, -d / 2.0)
+        .moveTo(gate_led_height, gate_led_side_dist)
+        .hole(gate_led_diameter, depth=hole_depth)
+        .moveTo(gate_led_height, d - gate_led_side_dist)
+        .hole(gate_led_diameter, depth=hole_depth)
+        .faces(">Y")
+        .workplane(centerOption="CenterOfMass")
+        .center(0, -d / 2.0)
+        .moveTo(0, gate_led_side_dist)
+        .hole(gate_led_diameter, depth=w / 2)
+        .moveTo(0, d - gate_led_side_dist)
+        .hole(gate_led_diameter, depth=w / 2)
+    )
     tag_box(box)
     return box
 
@@ -241,9 +278,11 @@ gate_a_l = make_gate_side("r")
 gate_a_r = make_gate_side("l")
 gate_b_l = make_gate_side("r")
 gate_b_r = make_gate_side("r")
-squared_timber_l = make_squared_timber()
-squared_timber_m = make_squared_timber()
-squared_timber_r = make_squared_timber()
+squared_timber_l = make_squared_timber_bottom("l")
+squared_timber_m = make_squared_timber_bottom("m")
+squared_timber_r = make_squared_timber_bottom("r")
+squared_timber_top_l = make_squared_timber_top()
+squared_timber_top_r = make_squared_timber_top()
 
 
 def make_assembly():
@@ -261,6 +300,8 @@ def make_assembly():
         .add(squared_timber_l, name="squared_timber_l", color=cq.Color("red"))
         .add(squared_timber_m, name="squared_timber_m", color=cq.Color("red"))
         .add(squared_timber_r, name="squared_timber_r", color=cq.Color("red"))
+        .add(squared_timber_top_l, name="squared_timber_top_l", color=cq.Color("red"))
+        .add(squared_timber_top_r, name="squared_timber_top_r", color=cq.Color("red"))
     )
 
     (
@@ -273,6 +314,8 @@ def make_assembly():
         .constrain("squared_timber_m", "FixedRotation", (0, 0, 0))
         .constrain("squared_timber_r", "FixedRotation", (0, 0, 0))
         .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
+        .constrain("squared_timber_top_l", "FixedRotation", (0, 0, 0))
+        .constrain("squared_timber_top_r", "FixedRotation", (0, 0, 0))
         .constrain(
             "gate_a_l",
             gate_a_l.faces(">Z").edges("<X").vertices("<Y").val(),
@@ -323,6 +366,8 @@ def make_assembly():
         .constrain("left?front_bl", "squared_timber_l?front_bl", "Point")
         .constrain("gate_a_r?front_bl", "squared_timber_m?front_bl", "Point")
         .constrain("gate_b_r?front_bl", "squared_timber_r?front_bl", "Point")
+        .constrain("top?back_bl", "squared_timber_top_l?front_tl", "Point")
+        .constrain("top?back_br", "squared_timber_top_r?front_tr", "Point")
         .solve()
     )
 
@@ -331,7 +376,6 @@ def make_assembly():
 
 if len(sys.argv) <= 1:
     gate = make_assembly()
-    print(gate)
     show_object(gate, name="gate")
 else:
     print("height, depth:", height, depth)
