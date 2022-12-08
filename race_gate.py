@@ -145,6 +145,15 @@ def make_top():
             ]
         )
         .circle(cursor_button_diameter / 2.0)
+        .pushPoints(
+            [
+                (-(w - squared_timber_size) / 2.0, -(h - squared_timber_size) / 2.0),
+                (-(w - squared_timber_size) / 2.0, (h - squared_timber_size) / 2.0),
+                ((w - squared_timber_size) / 2.0, -(h - squared_timber_size) / 2.0),
+                ((w - squared_timber_size) / 2.0, (h - squared_timber_size) / 2.0),
+            ]
+        )
+        .circle(wood_screw_diameter / 2.0)
         .extrude(wood_thickness)
     )
     tag_box(top)
@@ -161,9 +170,17 @@ def make_right():
         cq.Workplane("XY")
         .rect(w, h)
         .center(-w / 2, -h / 2)
+        # screw holes bottom
         .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        # screw holes top
+        .moveTo(gate_led_side_dist + screw_hole_x, h - wood_thickness - screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        .moveTo(
+            w - gate_led_side_dist - screw_hole_x, h - wood_thickness - screw_hole_y
+        )
         .circle(wood_screw_diameter / 2.0)
         .extrude(wood_thickness)
     )
@@ -181,12 +198,22 @@ def make_left():
         cq.Workplane("XY")
         .rect(w, h)
         .center(-w / 2, -h / 2)
+        # switch
         .moveTo(w / 2, height - on_off_switch_height_offset)
         .circle(on_off_switch_diameter / 2.0)
+        # screw holes bottom
         .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
         .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
+        # screw holes top
+        .moveTo(gate_led_side_dist + screw_hole_x, h - wood_thickness - screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        .moveTo(
+            w - gate_led_side_dist - screw_hole_x, h - wood_thickness - screw_hole_y
+        )
+        .circle(wood_screw_diameter / 2.0)
+        # done
         .extrude(wood_thickness)
     )
     tag_box(left)
