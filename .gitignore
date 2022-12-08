@@ -1,2 +1,5 @@
 *.dxf
 *.svg
+*.pdf
+stencil.log
+stencil.aux

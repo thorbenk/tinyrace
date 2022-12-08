@@ -181,98 +181,112 @@ gate_a_r = make_gate_side()
 gate_b_l = make_gate_side()
 gate_b_r = make_gate_side()
 
-gate = (
-    cq.Assembly()
-    .add(front, name="front", color=cq.Color("yellow"))
-    .add(top, name="top", color=cq.Color("black"))
-    .add(left, name="left", color=cq.Color("blue"))
-    .add(right, name="right", color=cq.Color("orange"))
-    .add(back, name="back", color=cq.Color("gray"))
-    .add(gate_a_l, name="gate_a_l", color=cq.Color("red"))
-    .add(gate_a_r, name="gate_a_r", color=cq.Color("orange"))
-    .add(gate_b_l, name="gate_b_l", color=cq.Color("blue"))
-    .add(gate_b_r, name="gate_b_r", color=cq.Color("yellow"))
-)
+def make_assembly():
+    gate = (
+        cq.Assembly()
+        .add(front, name="front", color=cq.Color("yellow"))
+        .add(top, name="top", color=cq.Color("black"))
+        .add(left, name="left", color=cq.Color("blue"))
+        .add(right, name="right", color=cq.Color("orange"))
+        .add(back, name="back", color=cq.Color("gray"))
+        .add(gate_a_l, name="gate_a_l", color=cq.Color("red"))
+        .add(gate_a_r, name="gate_a_r", color=cq.Color("orange"))
+        .add(gate_b_l, name="gate_b_l", color=cq.Color("blue"))
+        .add(gate_b_r, name="gate_b_r", color=cq.Color("yellow"))
+    )
 
-(
-    gate.constrain("front", "FixedRotation", (0, 0, 0))
-    .constrain("top", "FixedRotation", (-90, 0, 0))
-    .constrain("left", "FixedRotation", (0, 90, 0))
-    .constrain("right", "FixedRotation", (0, 90, 0))
-    .constrain("back", "FixedRotation", (0, 0, 0))
-    .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
-    .constrain(
-        "gate_a_l",
-        gate_a_l.faces(">Z").edges("<X").vertices("<Y").val(),
-        "front",
-        front.vertices(
-            cq.selectors.NearestToPointSelector(
-                (-(gate_gate_width / 2.0 + gate_width), 0, 0)
-            )
-        ).val(),
-        "Point",
+    (
+        gate.constrain("front", "FixedRotation", (0, 0, 0))
+        .constrain("top", "FixedRotation", (-90, 0, 0))
+        .constrain("left", "FixedRotation", (0, 90, 0))
+        .constrain("right", "FixedRotation", (0, 90, 0))
+        .constrain("back", "FixedRotation", (0, 0, 0))
+        .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
+        .constrain(
+            "gate_a_l",
+            gate_a_l.faces(">Z").edges("<X").vertices("<Y").val(),
+            "front",
+            front.vertices(
+                cq.selectors.NearestToPointSelector(
+                    (-(gate_gate_width / 2.0 + gate_width), 0, 0)
+                )
+            ).val(),
+            "Point",
+        )
+        .constrain("gate_a_r", "FixedRotation", (0, 90, 0))
+        .constrain(
+            "gate_a_r",
+            gate_a_r.faces("<Z").edges("<X").vertices("<Y").val(),
+            "front",
+            front.vertices(
+                cq.selectors.NearestToPointSelector((-gate_gate_width / 2.0, 0, 0))
+            ).val(),
+            "Point",
+        )
+        .constrain("gate_b_l", "FixedRotation", (0, 90, 0))
+        .constrain(
+            "gate_b_l",
+            gate_b_l.faces(">Z").edges("<X").vertices("<Y").val(),
+            "front",
+            front.vertices(
+                cq.selectors.NearestToPointSelector((gate_gate_width / 2.0, 0, 0))
+            ).val(),
+            "Point",
+        )
+        .constrain("gate_b_r", "FixedRotation", (0, 90, 0))
+        .constrain(
+            "gate_b_r",
+            gate_b_r.faces("<Z").edges("<X").vertices("<Y").val(),
+            "front",
+            front.vertices(
+                cq.selectors.NearestToPointSelector(
+                    (gate_gate_width / 2.0 + gate_width, 0, 0)
+                )
+            ).val(),
+            "Point",
+        )
+        .constrain("left?back_bl", "front?back_bl", "Point")
+        .constrain("right?front_bl", "front?back_br", "Point")
+        .constrain("right?front_br", "back?front_br", "Point")
+        .constrain("top?front_bl", "left?front_tl", "Point")
+        .solve()
     )
-    .constrain("gate_a_r", "FixedRotation", (0, 90, 0))
-    .constrain(
-        "gate_a_r",
-        gate_a_r.faces("<Z").edges("<X").vertices("<Y").val(),
-        "front",
-        front.vertices(
-            cq.selectors.NearestToPointSelector((-gate_gate_width / 2.0, 0, 0))
-        ).val(),
-        "Point",
-    )
-    .constrain("gate_b_l", "FixedRotation", (0, 90, 0))
-    .constrain(
-        "gate_b_l",
-        gate_b_l.faces(">Z").edges("<X").vertices("<Y").val(),
-        "front",
-        front.vertices(
-            cq.selectors.NearestToPointSelector((gate_gate_width / 2.0, 0, 0))
-        ).val(),
-        "Point",
-    )
-    .constrain("gate_b_r", "FixedRotation", (0, 90, 0))
-    .constrain(
-        "gate_b_r",
-        gate_b_r.faces("<Z").edges("<X").vertices("<Y").val(),
-        "front",
-        front.vertices(
-            cq.selectors.NearestToPointSelector(
-                (gate_gate_width / 2.0 + gate_width, 0, 0)
-            )
-        ).val(),
-        "Point",
-    )
-    .constrain("left?back_bl", "front?back_bl", "Point")
-    .constrain("right?front_bl", "front?back_br", "Point")
-    .constrain("right?front_br", "back?front_br", "Point")
-    .constrain("top?front_bl", "left?front_tl", "Point")
-    .solve()
-)
 
 if len(sys.argv) <= 1:
+    gate = make_assembly()
     show_object(gate, name="gate")
 else:
     print("height, depth:", height, depth)
-    cq.exporters.export(
-        front, "front.dxf"
-    )
 
-    cmd = "/usr/bin/python3 /usr/share/inkscape/extensions/dxf_input.py --scale=1.0 front.dxf > /tmp/a.svg"
-    print(cmd)
-    os.system(cmd)
+    export = {
+        "front": front,
+        "back": back,
+        "left": left,
+        "right": right,
+        "top": top,
+        "gate_a_l": gate_a_l,
+        "gate_a_r": gate_a_r,
+        "gate_b_l": gate_b_l,
+        "gate_b_r": gate_b_r
+    }
+    for k, v in export.items():
+        print(f"exporting {k}")
+        cq.exporters.export(
+            v, f"{k}.dxf"
+        )
+        cmd = f"/usr/bin/python3 /usr/share/inkscape/extensions/dxf_input.py --scale=1.0 {k}.dxf > /tmp/a.svg"
+        print("  - running ", cmd)
+        os.system(cmd)
 
-    cmd = "inkscape --export-type=svg -o front.svg --export-area-drawing /tmp/a.svg"
-    print(cmd)
-    os.system(cmd)
+        cmd = f"inkscape --export-type=svg -o {k}.svg --export-area-drawing /tmp/a.svg"
+        print("  - running ", cmd)
+        os.system(cmd)
 
-    #cq.exporters.export(
-    #    top, "top.svg", opt={"projectionDir": (0, 0, 1), "showHidden": False}
-    #)
-    #cq.exporters.export(
-    #    front, "front.svg", opt={"projectionDir": (0, 0, 1), "showHidden": False}
-    #)
+        cmd = f"inkscape --export-area-drawing --batch-process --export-type=pdf --export-filename={k}.pdf {k}.svg"
+        print("  - running ", cmd)
+        os.system(cmd)
+
+
 # debug(top.faces(">Z").val())
 # debug(front.faces("<Z").val())
 # debug(left_topleft)
