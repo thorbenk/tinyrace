@@ -89,6 +89,72 @@ pts = [
 ]
 
 
+def make_neopixel_stick8():
+    stick = (
+        cq.Workplane("XY")
+        .box(54, 10, 1)
+        .faces(">Z")
+        .vertices("<XY")
+        .workplane(centerOption="CenterOfMass")
+        .tag("pcb")
+        .moveTo(1, 1)
+        .rect(neopixel_width, neopixel_height, centered=False)
+        .extrude(1)
+        .moveTo(13.5, 7.5)
+        .hole(2)
+        .moveTo(39, 7.5)
+        .hole(2)
+    )
+    return stick
+
+
+def make_lcd16x2():
+    lcd = (
+        cq.Workplane("XY")
+        .box(80, 36, 1)
+        .faces(">Z")
+        .workplane()
+        .rect(75.4, 31.4, forConstruction=True)
+        .vertices()
+        .hole(2.8)
+        .rect(70.70, 23.80)
+        .extrude(7)  # look up in spec
+        .faces(">Z")
+        .workplane()
+        .rect(69.6, 14.5)
+        .extrude(-1, combine="cut")
+        .edges("|Z")
+        .fillet(2)
+    )
+    return lcd
+
+
+def make_switch():
+    switch = (
+        cq.Workplane("XY")
+        .rect(23, 26)
+        .extrude(3)
+        .faces(">Z")
+        .workplane()
+        .rect(37, 26)
+        .extrude(2)
+        .faces(">Z")
+        .workplane()
+        .rect(23, 26)
+        .extrude(15)
+        .faces(">Z")
+        .workplane()
+        .tag("thread_mate")
+        .circle(10 / 2)
+        .extrude(12)
+        .faces(">Z")
+        .workplane()
+        .circle(3)
+        .extrude(15)
+    )
+    return switch
+
+
 def make_front():
 
     w = 2 * (gate_gate_width / 2.0 + gate_width + side_gate_dist)
@@ -208,8 +274,13 @@ def make_top():
         .faces(">Z")
         .vertices("<XY")
         .workplane(centerOption="CenterOfMass")
-        .moveTo(squared_timber_size/2.0, top_m4_screw_offset)
-        .rect(w-squared_timber_size, h - 2*top_m4_screw_offset, centered=False, forConstruction=True)
+        .moveTo(squared_timber_size / 2.0, top_m4_screw_offset)
+        .rect(
+            w - squared_timber_size,
+            h - 2 * top_m4_screw_offset,
+            centered=False,
+            forConstruction=True,
+        )
         .vertices()
         .hole(m4_screw_diameter)
     )
@@ -220,7 +291,9 @@ def make_top():
 def make_right():
     w, h = depth - 2 * wood_thickness, height
 
-    screw_hole_x_bottom = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_x_bottom = (
+        gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    )
     screw_hole_x_top = w / 2.0
     screw_hole_y = squared_timber_size / 2.0
 
@@ -245,7 +318,9 @@ def make_right():
 def make_left():
     w, h = depth - 2 * wood_thickness, height
 
-    screw_hole_x_bottom = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_x_bottom = (
+        gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    )
     screw_hole_x_top = w / 2.0
     screw_hole_y = squared_timber_size / 2.0
 
@@ -393,24 +468,23 @@ def make_topfloor():
     return box
 
 
-left = make_left()
-right = make_right()
-top = make_top()
-front = make_front()
-back = make_back()
-gate_a_l = make_gate_side("r")
-gate_a_r = make_gate_side("l")
-gate_b_l = make_gate_side("r")
-gate_b_r = make_gate_side("r")
-squared_timber_l = make_squared_timber_bottom("l")
-squared_timber_m = make_squared_timber_bottom("m")
-squared_timber_r = make_squared_timber_bottom("r")
-squared_timber_top_l = make_squared_timber_top()
-squared_timber_top_r = make_squared_timber_top()
-topfloor = make_topfloor()
-
-
 def make_assembly():
+    left = make_left()
+    right = make_right()
+    top = make_top()
+    front = make_front()
+    back = make_back()
+    gate_a_l = make_gate_side("r")
+    gate_a_r = make_gate_side("l")
+    gate_b_l = make_gate_side("r")
+    gate_b_r = make_gate_side("r")
+    squared_timber_l = make_squared_timber_bottom("l")
+    squared_timber_m = make_squared_timber_bottom("m")
+    squared_timber_r = make_squared_timber_bottom("r")
+    squared_timber_top_l = make_squared_timber_top()
+    squared_timber_top_r = make_squared_timber_top()
+    topfloor = make_topfloor()
+
     gate = (
         cq.Assembly()
         .add(front, name="front", color=cq.Color("yellow"))
@@ -505,6 +579,15 @@ def make_assembly():
 if len(sys.argv) <= 1:
     gate = make_assembly()
     show_object(gate, name="gate")
+
+    # stick = make_neopixel_stick8()
+    # show_object(stick)
+
+    # lcd = make_lcd16x2()
+    # show_object(lcd)
+
+    # switch = make_switch()
+    # show_object(switch)
 else:
     print("height, depth:", height, depth)
     print(
