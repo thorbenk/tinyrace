@@ -159,8 +159,11 @@ def make_back():
         .mirrorY()
         .extrude(wood_thickness)
         # drill hole between gates
+        .faces(">Z")
+        .workplane()
         .moveTo(0, squared_timber_size / 2.0)
         .circle(wood_screw_diameter / 2.0)
+        .cutThruAll()
         # drill holes (left/right)
         .faces(">Z")
         .vertices("<XY")
