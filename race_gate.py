@@ -4,34 +4,49 @@ import cadquery as cq
 import sys
 import os
 
-side_gate_dist = 30
-gate_width = 51
+# size of electronic components
+#
+# neopixel stick
+neopixel_width = 51
+neopixel_height = 4
+# on/off switch
+on_off_switch_diameter = 12
+# 16x2 LED display
+lcd_cutout_width = 70.70
+lcd_cutout_height = 23.80
+# IR emitter / receiver LEDs
+gate_led_diameter = 5
+
+# size of materials
+#
+wood_thickness = 7
+squared_timber_size = 20
+wood_screw_diameter = 2
+
+
+side_gate_dist = 2 * wood_thickness + squared_timber_size
+gate_width = neopixel_width
 gate_height = 40
-gate_gate_width = 30
+gate_gate_width = 2 * wood_thickness + squared_timber_size
 height = 90
 depth = 110
 
-wood_thickness = 7
 
 lcd_offset_below = 15
-lcd_cutout_width = 70.70
-lcd_cutout_height = 23.80
 lcd_offset_above = 15
 
 neopixel_offset = 10
-neopixel_width = gate_width
-neopixel_height = 4
 
 gate_led_side_dist = 7
 gate_led_height = 12
-gate_led_diameter = 5
 
 cursor_buttons_x = 20
 cursor_buttons_y = 15
 cursor_button_diameter = 10
 
-on_off_switch_diameter = 12
 on_off_switch_height_offset = 30
+
+screw_offset = 7.5
 
 height = (
     gate_height
@@ -138,28 +153,61 @@ def make_top():
 
 def make_right():
     w, h = depth - 2 * wood_thickness, height
-    right = cq.Workplane("XY").rect(w, h).extrude(wood_thickness)
+
+    screw_hole_x = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_y = squared_timber_size / 2.0
+
+    right = (
+        cq.Workplane("XY")
+        .rect(w, h)
+        .center(-w / 2, -h / 2)
+        .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        .extrude(wood_thickness)
+    )
     tag_box(right)
     return right
 
 
 def make_left():
     w, h = depth - 2 * wood_thickness, height
+
+    screw_hole_x = gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+    screw_hole_y = squared_timber_size / 2.0
+
     left = (
         cq.Workplane("XY")
         .rect(w, h)
         .center(-w / 2, -h / 2)
         .moveTo(w / 2, height - on_off_switch_height_offset)
         .circle(on_off_switch_diameter / 2.0)
+        .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
         .extrude(wood_thickness)
     )
     tag_box(left)
     return left
 
 
-def make_gate_side():
+def make_gate_side(side="l"):
     w, h = depth - 2 * wood_thickness, gate_height
-    return (
+
+    if side == "l":
+        screw_hole_x = (
+            gate_led_diameter / 2.0 + screw_offset + wood_screw_diameter / 2.0
+        )
+    else:
+        screw_hole_x = gate_led_diameter / 2.0 + 2 * (
+            screw_offset + wood_screw_diameter / 2.0
+        )
+
+    screw_hole_y = squared_timber_size / 2.0
+
+    box = (
         cq.Workplane("XY")
         .rect(w, h)
         .center(-w / 2.0, -h / 2.0)
@@ -167,8 +215,21 @@ def make_gate_side():
         .circle(gate_led_diameter / 2.0)
         .moveTo(w - gate_led_side_dist, gate_led_height)
         .circle(gate_led_diameter / 2.0)
+        .moveTo(gate_led_side_dist + screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
+        .moveTo(w - gate_led_side_dist - screw_hole_x, screw_hole_y)
+        .circle(wood_screw_diameter / 2.0)
         .extrude(wood_thickness)
     )
+    tag_box(box)
+    return box
+
+
+def make_squared_timber():
+    d = depth - 2 * wood_thickness
+    box = cq.Workplane("XY").rect(squared_timber_size, squared_timber_size).extrude(d)
+    tag_box(box)
+    return box
 
 
 left = make_left()
@@ -176,10 +237,14 @@ right = make_right()
 top = make_top()
 front = make_front()
 back = make_back()
-gate_a_l = make_gate_side()
-gate_a_r = make_gate_side()
-gate_b_l = make_gate_side()
-gate_b_r = make_gate_side()
+gate_a_l = make_gate_side("r")
+gate_a_r = make_gate_side("l")
+gate_b_l = make_gate_side("r")
+gate_b_r = make_gate_side("r")
+squared_timber_l = make_squared_timber()
+squared_timber_m = make_squared_timber()
+squared_timber_r = make_squared_timber()
+
 
 def make_assembly():
     gate = (
@@ -193,6 +258,9 @@ def make_assembly():
         .add(gate_a_r, name="gate_a_r", color=cq.Color("orange"))
         .add(gate_b_l, name="gate_b_l", color=cq.Color("blue"))
         .add(gate_b_r, name="gate_b_r", color=cq.Color("yellow"))
+        .add(squared_timber_l, name="squared_timber_l", color=cq.Color("red"))
+        .add(squared_timber_m, name="squared_timber_m", color=cq.Color("red"))
+        .add(squared_timber_r, name="squared_timber_r", color=cq.Color("red"))
     )
 
     (
@@ -201,6 +269,9 @@ def make_assembly():
         .constrain("left", "FixedRotation", (0, 90, 0))
         .constrain("right", "FixedRotation", (0, 90, 0))
         .constrain("back", "FixedRotation", (0, 0, 0))
+        .constrain("squared_timber_l", "FixedRotation", (0, 0, 0))
+        .constrain("squared_timber_m", "FixedRotation", (0, 0, 0))
+        .constrain("squared_timber_r", "FixedRotation", (0, 0, 0))
         .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
         .constrain(
             "gate_a_l",
@@ -249,11 +320,18 @@ def make_assembly():
         .constrain("right?front_bl", "front?back_br", "Point")
         .constrain("right?front_br", "back?front_br", "Point")
         .constrain("top?front_bl", "left?front_tl", "Point")
+        .constrain("left?front_bl", "squared_timber_l?front_bl", "Point")
+        .constrain("gate_a_r?front_bl", "squared_timber_m?front_bl", "Point")
+        .constrain("gate_b_r?front_bl", "squared_timber_r?front_bl", "Point")
         .solve()
     )
 
+    return gate
+
+
 if len(sys.argv) <= 1:
     gate = make_assembly()
+    print(gate)
     show_object(gate, name="gate")
 else:
     print("height, depth:", height, depth)
@@ -267,13 +345,11 @@ else:
         "gate_a_l": gate_a_l,
         "gate_a_r": gate_a_r,
         "gate_b_l": gate_b_l,
-        "gate_b_r": gate_b_r
+        "gate_b_r": gate_b_r,
     }
     for k, v in export.items():
         print(f"exporting {k}")
-        cq.exporters.export(
-            v, f"{k}.dxf"
-        )
+        cq.exporters.export(v, f"{k}.dxf")
         cmd = f"/usr/bin/python3 /usr/share/inkscape/extensions/dxf_input.py --scale=1.0 {k}.dxf > /tmp/a.svg"
         print("  - running ", cmd)
         os.system(cmd)
