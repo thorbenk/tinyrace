@@ -38,7 +38,7 @@ lcd_offset_above = 15
 
 neopixel_offset = 10
 
-gate_led_side_dist = 7
+gate_led_side_dist = 10
 gate_led_height = 12
 
 cursor_buttons_x = 20
@@ -87,9 +87,17 @@ pts = [
 
 
 def make_front():
+
+    w = 2 * (gate_gate_width / 2.0 + gate_width + side_gate_dist)
+    h = height
+
     front = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
     front = (
-        front.workplane(offset=0)
+        front.workplane()
+        # drill hole between gates
+        .moveTo(0, squared_timber_size / 2.0)
+        .circle(wood_screw_diameter / 2.0)
+        # LCD cutout
         .center(
             0,
             gate_height
@@ -100,6 +108,7 @@ def make_front():
         )
         .rect(lcd_cutout_width, lcd_cutout_height)
         .cutThruAll()
+        # neopixel cutout (Gate A)
         .workplane(
             offset=0,
             origin=(
@@ -109,6 +118,7 @@ def make_front():
         )
         .rect(neopixel_width, neopixel_height)
         .cutThruAll()
+        # neopixel cutout (Gate B)
         .workplane(
             offset=0,
             origin=(
@@ -117,6 +127,21 @@ def make_front():
             ),
         )
         .rect(neopixel_width, neopixel_height)
+        # drill holes (left/right)
+        .cutThruAll()
+        .faces(">Z")
+        .vertices("<XY")
+        .workplane(centerOption="CenterOfMass")
+        #   -> lower left vertex is center
+        .center(wood_thickness + squared_timber_size / 2.0, squared_timber_size / 2.0)
+        .rect(
+            w - 2 * wood_thickness - squared_timber_size,
+            h - wood_thickness - squared_timber_size,
+            centered=False,
+            forConstruction=True,
+        )
+        .vertices()
+        .circle(wood_screw_diameter / 2.0)
         .cutThruAll()
     )
     tag_box(front)
@@ -124,7 +149,34 @@ def make_front():
 
 
 def make_back():
-    back = cq.Workplane("XY").polyline(pts).close().mirrorY().extrude(wood_thickness)
+    w = 2 * (gate_gate_width / 2.0 + gate_width + side_gate_dist)
+    h = height
+
+    back = (
+        cq.Workplane("XY")
+        .polyline(pts)
+        .close()
+        .mirrorY()
+        .extrude(wood_thickness)
+        # drill hole between gates
+        .moveTo(0, squared_timber_size / 2.0)
+        .circle(wood_screw_diameter / 2.0)
+        # drill holes (left/right)
+        .faces(">Z")
+        .vertices("<XY")
+        .workplane(centerOption="CenterOfMass")
+        #  -> lower left vertex is center
+        .center(wood_thickness + squared_timber_size / 2.0, squared_timber_size / 2.0)
+        .rect(
+            w - 2 * wood_thickness - squared_timber_size,
+            h - wood_thickness - squared_timber_size,
+            centered=False,
+            forConstruction=True,
+        )
+        .vertices()
+        .circle(wood_screw_diameter / 2.0)
+        .cutThruAll()
+    )
     tag_box(back)
     return back
 
@@ -457,6 +509,9 @@ if len(sys.argv) <= 1:
     show_object(gate, name="gate")
 else:
     print("height, depth:", height, depth)
+    print(
+        "Gate LED - LED distance:", depth - 2 * wood_thickness - 2 * gate_led_side_dist
+    )
 
     export = {
         "front": front,
