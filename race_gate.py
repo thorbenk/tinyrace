@@ -296,6 +296,29 @@ def make_squared_timber_bottom(pos):
     return box
 
 
+def make_topfloor():
+    w, h = (
+        2 * (gate_gate_width / 2 + gate_width + side_gate_dist - wood_thickness),
+        depth - 2 * wood_thickness,
+    )
+
+    gate_a_begin_x = -w / 2 + side_gate_dist - wood_thickness
+
+    box2 = (
+        cq.Workplane("XY")
+        .center(gate_a_begin_x + gate_width / 2, 0)
+        .box(gate_width, h, wood_thickness)
+    )
+    box = cq.Workplane("XY").box(w, h, wood_thickness).union(toUnion=box2, clean=False)
+
+    box.vertices(cq.selectors.NearestToPointSelector((gate_a_begin_x, 0))).tag(
+        "gate_a_l"
+    )
+
+    tag_box(box)
+    return box
+
+
 left = make_left()
 right = make_right()
 top = make_top()
@@ -310,6 +333,7 @@ squared_timber_m = make_squared_timber_bottom("m")
 squared_timber_r = make_squared_timber_bottom("r")
 squared_timber_top_l = make_squared_timber_top()
 squared_timber_top_r = make_squared_timber_top()
+topfloor = make_topfloor()
 
 
 def make_assembly():
@@ -329,11 +353,13 @@ def make_assembly():
         .add(squared_timber_r, name="squared_timber_r", color=cq.Color("red"))
         .add(squared_timber_top_l, name="squared_timber_top_l", color=cq.Color("red"))
         .add(squared_timber_top_r, name="squared_timber_top_r", color=cq.Color("red"))
+        .add(topfloor, name="topfloor", color=cq.Color("red"))
     )
 
     (
         gate.constrain("front", "FixedRotation", (0, 0, 0))
         .constrain("top", "FixedRotation", (-90, 0, 0))
+        .constrain("topfloor", "FixedRotation", (-90, 0, 0))
         .constrain("left", "FixedRotation", (0, 90, 0))
         .constrain("right", "FixedRotation", (0, 90, 0))
         .constrain("back", "FixedRotation", (0, 0, 0))
@@ -395,6 +421,7 @@ def make_assembly():
         .constrain("gate_b_r?front_bl", "squared_timber_r?front_bl", "Point")
         .constrain("top?back_bl", "squared_timber_top_l?front_tl", "Point")
         .constrain("top?back_br", "squared_timber_top_r?front_tr", "Point")
+        .constrain("topfloor?gate_a_l", "gate_a_l?front_tl", "Point")
         .solve()
     )
 
