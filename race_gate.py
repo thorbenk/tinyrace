@@ -30,12 +30,11 @@ side_gate_dist = 2 * wood_thickness + squared_timber_size
 gate_width = neopixel_width
 gate_height = 40
 gate_gate_width = 2 * wood_thickness + squared_timber_size
-height = 90
 depth = 110
 
 
 lcd_offset_below = 15
-lcd_offset_above = 15
+lcd_offset_above = 20
 
 neopixel_offset = 10
 
@@ -46,7 +45,7 @@ cursor_buttons_x = 20
 cursor_buttons_y = 15
 cursor_button_diameter = 10
 
-on_off_switch_height_offset = squared_timber_size + 20
+on_off_switch_height_offset = squared_timber_size + 25
 
 screw_offset = 7.5
 
@@ -99,6 +98,7 @@ def make_neopixel_stick8():
         .tag("pcb")
         .moveTo(1, 1)
         .rect(neopixel_width, neopixel_height, centered=False)
+        .tag("mate")
         .extrude(1)
         .moveTo(13.5, 7.5)
         .hole(2)
@@ -118,6 +118,7 @@ def make_lcd16x2():
         .vertices()
         .hole(2.8)
         .rect(70.70, 23.80)
+        .tag("mate")
         .extrude(7)  # look up in spec
         .faces(">Z")
         .workplane()
@@ -143,8 +144,8 @@ def make_switch():
         .rect(23, 26)
         .extrude(15)
         .faces(">Z")
-        .workplane()
         .tag("thread_mate")
+        .workplane()
         .circle(10 / 2)
         .extrude(12)
         .faces(">Z")
@@ -176,6 +177,7 @@ def make_front():
             + lcd_cutout_height / 2.0,
         )
         .rect(lcd_cutout_width, lcd_cutout_height)
+        .tag("lcd_hole")
         .cutThruAll()
         # neopixel cutout (Gate A)
         .workplane(
@@ -186,6 +188,7 @@ def make_front():
             ),
         )
         .rect(neopixel_width, neopixel_height)
+        .tag("neopixel_stick_hole_a")
         .cutThruAll()
         # neopixel cutout (Gate B)
         .workplane(
@@ -196,6 +199,7 @@ def make_front():
             ),
         )
         .rect(neopixel_width, neopixel_height)
+        .tag("neopixel_stick_hole_b")
         # drill holes (left/right)
         .cutThruAll()
         .faces(">Z")
@@ -331,6 +335,7 @@ def make_left():
         # switch
         .moveTo(w / 2, height - on_off_switch_height_offset)
         .circle(on_off_switch_diameter / 2.0)
+        .tag("switch_hole")
         # screw holes bottom
         .moveTo(gate_led_side_dist + screw_hole_x_bottom, screw_hole_y)
         .circle(wood_screw_diameter / 2.0)
@@ -484,6 +489,10 @@ def make_assembly():
     squared_timber_top_l = make_squared_timber_top()
     squared_timber_top_r = make_squared_timber_top()
     topfloor = make_topfloor()
+    lcd = make_lcd16x2()
+    stick_l = make_neopixel_stick8()
+    stick_r = make_neopixel_stick8()
+    switch = make_switch()
 
     gate = (
         cq.Assembly()
@@ -502,6 +511,10 @@ def make_assembly():
         .add(squared_timber_top_l, name="squared_timber_top_l", color=cq.Color("red"))
         .add(squared_timber_top_r, name="squared_timber_top_r", color=cq.Color("red"))
         .add(topfloor, name="topfloor", color=cq.Color("red"))
+        .add(lcd, name="lcd", color=cq.Color("red"))
+        .add(stick_l, name="stick_l", color=cq.Color("red"))
+        .add(stick_r, name="stick_r", color=cq.Color("red"))
+        .add(switch, name="switch", color=cq.Color("red"))
     )
 
     (
@@ -517,6 +530,11 @@ def make_assembly():
         .constrain("gate_a_l", "FixedRotation", (0, 90, 0))
         .constrain("squared_timber_top_l", "FixedRotation", (0, 0, 0))
         .constrain("squared_timber_top_r", "FixedRotation", (0, 0, 0))
+        .constrain("lcd", "FixedRotation", (0, 0, 0))
+        .constrain("stick_l", "FixedRotation", (0, 0, 0))
+        .constrain("stick_r", "FixedRotation", (0, 0, 0))
+        .constrain("switch", "FixedRotation", (0, -90, 0))
+        .constrain("lcd?mate", "front?lcd_hole", "Point")
         .constrain(
             "gate_a_l",
             gate_a_l.faces(">Z").edges("<X").vertices("<Y").val(),
@@ -570,6 +588,9 @@ def make_assembly():
         .constrain("top?back_bl", "squared_timber_top_l?front_tl", "Point")
         .constrain("top?back_br", "squared_timber_top_r?front_tr", "Point")
         .constrain("topfloor?gate_a_l", "gate_a_l?front_tl", "Point")
+        .constrain("stick_l?mate", "front?neopixel_stick_hole_a", "Point")
+        .constrain("stick_r?mate", "front?neopixel_stick_hole_b", "Point")
+        .constrain("switch?thread_mate", "left?switch_hole", "Point")
         .solve()
     )
 
