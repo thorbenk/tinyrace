@@ -472,28 +472,28 @@ def make_topfloor():
     tag_box(box)
     return box
 
+left = make_left()
+right = make_right()
+top = make_top()
+front = make_front()
+back = make_back()
+gate_a_l = make_gate_side("r")
+gate_a_r = make_gate_side("l")
+gate_b_l = make_gate_side("r")
+gate_b_r = make_gate_side("r")
+squared_timber_l = make_squared_timber_bottom("l")
+squared_timber_m = make_squared_timber_bottom("m")
+squared_timber_r = make_squared_timber_bottom("r")
+squared_timber_top_l = make_squared_timber_top()
+squared_timber_top_r = make_squared_timber_top()
+topfloor = make_topfloor()
+lcd = make_lcd16x2()
+stick_l = make_neopixel_stick8()
+stick_r = make_neopixel_stick8()
+switch = make_switch()
+
 
 def make_assembly():
-    left = make_left()
-    right = make_right()
-    top = make_top()
-    front = make_front()
-    back = make_back()
-    gate_a_l = make_gate_side("r")
-    gate_a_r = make_gate_side("l")
-    gate_b_l = make_gate_side("r")
-    gate_b_r = make_gate_side("r")
-    squared_timber_l = make_squared_timber_bottom("l")
-    squared_timber_m = make_squared_timber_bottom("m")
-    squared_timber_r = make_squared_timber_bottom("r")
-    squared_timber_top_l = make_squared_timber_top()
-    squared_timber_top_r = make_squared_timber_top()
-    topfloor = make_topfloor()
-    lcd = make_lcd16x2()
-    stick_l = make_neopixel_stick8()
-    stick_r = make_neopixel_stick8()
-    switch = make_switch()
-
     gate = (
         cq.Assembly()
         .add(front, name="front", color=cq.Color("yellow"))
@@ -610,6 +610,8 @@ if len(sys.argv) <= 1:
     # switch = make_switch()
     # show_object(switch)
 else:
+    gate = make_assembly()
+
     print("height, depth:", height, depth)
     print(
         "Gate LED - LED distance:", depth - 2 * wood_thickness - 2 * gate_led_side_dist
