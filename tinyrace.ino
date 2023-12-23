@@ -8,13 +8,13 @@
 CRGB leds[NUM_LEDS];
 
 // PINS
-const int lane_sensors[2][2] = {{A0, A1}, {A2, A3}};
+const int lane_sensors[2][2] = {{A1, A0}, {A3, A2}};
 const int lane_sensor_thresh[2][2] = {{10, 10}, {10, 10}};
-constexpr int neopixels_data_pin = 4;
-constexpr int button_left_pin = 11;
-constexpr int button_right_pin = 12;
-constexpr int button_up_pin = 8;
-constexpr int button_down_pin = 10;
+constexpr int neopixels_data_pin = 8;
+constexpr int button_left_pin = 5;
+constexpr int button_right_pin = 4;
+constexpr int button_up_pin = 3;
+constexpr int button_down_pin = 2;
 constexpr unsigned long race_timeout_usecs = 5E6;
 
 unsigned long lane_micros[2][2];
@@ -67,11 +67,12 @@ void leds_blink(int led_number) {
 void leds_display_winner() {
   CRGB lane_a_color, lane_b_color;
   if (lane_micros[0][1] > lane_micros[1][1]) {
-    lane_a_color = CRGB(0, 128, 0);
-    lane_b_color = CRGB(128, 0, 0);
+    lane_a_color = CRGB(0, 64, 0);
+    lane_b_color = CRGB(64, 0, 0);
   } else {
-    lane_a_color = CRGB(128, 0, 0);
-    lane_b_color = CRGB(0, 128, 0);
+  FastLED.show();
+    lane_a_color = CRGB(64, 0, 0);
+    lane_b_color = CRGB(0, 64, 0);
   }
   for (uint8_t lane = 0; lane < 2; ++lane) {
     for (uint8_t i = 0; i < LANE_LEDS; ++i) {
@@ -96,7 +97,7 @@ void full_reset() {
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("JANNIS");
+  lcd.print("Jannis");
   lcd.setCursor(0, 1);
   lcd.print("Hotwheels Rennen");
 }

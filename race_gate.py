@@ -8,7 +8,7 @@ import os
 #
 # neopixel stick
 neopixel_width = 51
-neopixel_height = 4
+neopixel_height = 5
 # on/off switch
 on_off_switch_diameter = 12
 # 16x2 LED display
@@ -30,7 +30,7 @@ side_gate_dist = 2 * wood_thickness + squared_timber_size
 gate_width = neopixel_width
 gate_height = 40
 gate_gate_width = 2 * wood_thickness + squared_timber_size
-depth = 110
+depth = 120
 
 
 lcd_offset_below = 15
